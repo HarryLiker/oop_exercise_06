@@ -1,6 +1,6 @@
 #include <iostream>
 #include "menu.hpp"
-#include "allocator2.hpp"
+#include "allocator.hpp"
 #include <stack>
 #include <list>
 #include <vector>
@@ -9,6 +9,8 @@
 #include "stack.hpp"
 
 int main() {
+
+    /*
     std::cout << "//////////////////////////////////////////////////////\n";
     std::vector<int> vec;
     vec.push_back(2);
@@ -36,4 +38,23 @@ int main() {
 
     std::for_each(stc.begin(), stc.end(), print_elem);
     std::cout << "Top element = " << stc.Top() << "\n";
+    */
+
+   //menu();
+
+   const std::size_t BLOCK_SIZE = 256;
+
+    std::vector<int, Allocator<int, BLOCK_SIZE> > vec;
+    for (int i = 0; i < 10; ++i) {
+        vec.push_back(i);
+    }
+    for (int i = 0; i < 10; ++i) {
+        vec.pop_back();
+    }
+    for (int i = 0; i < 10; ++i) {
+        vec.push_back(i);
+    }
+    for (const int & elem : vec) {
+        std::cout << elem << std::endl;
+    }
 }

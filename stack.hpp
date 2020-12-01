@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <memory>
-#include <iterator>
+//#include "iterator.hpp"
 #include <exception>
 
 
@@ -101,6 +101,10 @@ public:
 
     Stack() noexcept: TopNode(nullptr) {}
 
+    size_t FindSize() {
+        return Size;
+    }
+
     void Push(const T &element) {
         if (Size == 0) {
             Node<T> *new_node = new Node<T>(element);
@@ -138,7 +142,40 @@ public:
         if (iter->IsNull()) {
         }
     }
-    
+
+    void Insert(StackIterator iter, const T &elem) {
+        std::unique_ptr<Node<T>> new_node {new Node<T>(elem)};
+        std::shared_ptr<Node<T>> new_pointer = std::move(new_node);
+        std::shared_ptr<Node<T>> next_pointer = TopNode;
+        if (*iter == *TopNode) {
+            new_pointer->Next = TopNode;
+            TopNode = new_pointer;
+        }
+        else if (next_pointer) {
+            if (!iter.IsNull()) {
+                while (*next_pointer->Next != *iter) {
+                    ++next_pointer;
+                }
+            }
+            else {
+                while (new_pointer->Next != nullptr) {
+                    ++next_pointer;
+                }
+            }
+            if (next_pointer->Next == nullptr) {
+                next_pointer->Next = new_pointer;
+            }
+            else {
+                new_pointer->Next = next_pointer->Next;
+                next_pointer->Next = new_pointer;
+            }
+        }
+        else {
+            TopNode = new_pointer;
+        }
+        ++Size;
+    }
+
     StackIterator begin() {
         return StackIterator(TopNode);
     }

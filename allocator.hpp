@@ -9,20 +9,29 @@ private:
     T* Buffer;
     std::vector<T*> Vector;
 public:
+    using allocator_type = Allocator;
     using value_type = T;
     using pointer = T*;
     using const_pointer = const T*;
     using size_type = std::size_t;
 
-    Allocator(): Buffer{}, Free_index(0) {
+    Allocator(): Vector(), Buffer(nullptr) {
         static_assert(BLOCK_SIZE > 0);
     }
 
-    T *Allocate(const std::size_t &size) {
+    explicit Allocator (const Allocator<T, BLOCK_SIZE> &another_allocator): Allocator() {
+        Buffer = new T[BLOCK_SIZE];
+        for (std::size_t i = 0; i < BLOCK_SIZE; ++i) {
+            Buffer[i] = another_allocator.Buffer[i];
+            Vector.push_back(&Buffer[i]);
+        }
+    }
+
+    T *allocate(const std::size_t &size) {
         if (Buffer == nullptr) {
             Buffer = new T[BLOCK_SIZE];
             for (std::size_t i = 0; i < BLOCK_SIZE; i++) {
-                Vector[i] = &Buffer[i];
+                Vector.push_back(&Buffer[i]);
             }
         }
         if (Vector.size() < size) {
@@ -38,12 +47,17 @@ public:
     }
 
     template<class U>
-    struct Rebind {
+    struct rebind {
         using other = Allocator<U, BLOCK_SIZE>;
+    };
+
+    void deallocate(T* pointer, std::size_t) {
+        ;
     }
 
-    void Dellocate(T* pointer, std::size_t) {
-        Vector.erase(pointer);
+    template<class OTHER_T, class... ARGS>
+    void construct(OTHER_T* p, ARGS... arguments) {
+        *p = OTHER_T(std::forward<ARGS>(arguments)...);
     }
 
     ~Allocator() {
