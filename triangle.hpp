@@ -10,6 +10,7 @@ struct Triangle {
     vertex_t Center;
     T Side;
 
+    Triangle(): Center(), Side() {}
     Triangle(const vertex_t &center, const T &side): Center(center), Side(side) {}
 
     double Square() const {

@@ -2,9 +2,11 @@
 #include <algorithm>
 #include "stack.hpp"
 #include "triangle.hpp"
+#include <exception>
 
 int menu() {
-    Stack<Triangle<int>> stack;
+    const std::size_t BLOCK_SIZE = 256;
+    Stack<Triangle<int>, allocator<Triangle<int>, BLOCK_SIZE>> stack;
     while(1) {
         std::cout << "Menu:\n";
         std::cout << "1 - Add figure in collection as stack\n";
@@ -31,6 +33,7 @@ int menu() {
         }
         case 2:
         {
+            
             int x,y;
             int side;
             int index;
@@ -60,19 +63,37 @@ int menu() {
         }
         case 3:
         {
+            stack.Pop();
+            std::cout << "The figure has been removed\n";
             break;
         }
         case 4:
         {
+            int index;
+            std::cout << "Enter the position of the element to remove: ";
+            std::cin >> index;
+            try {
+                auto iterator = stack.begin();
+                while (--index) {
+                    ++iterator;
+                }
+                stack.Erase(iterator);
+                std::cout << "The figure has been removed\n";
+            }
+            catch(std::runtime_error &error) {
+                std::cout << error.what() << "\n";
+            }
             break;
         }
         case 5:
         {
-            auto print_stack = [](const Node<Triangle<int>> &figure) {
+            
+            auto print_stack = [](const auto & figure) {
                 std::cout << figure << "\n";
             };
             std::cout << "All figures:\n";
             std::for_each(stack.begin(), stack.end(), print_stack);
+            
             break;
         }
         case 6:

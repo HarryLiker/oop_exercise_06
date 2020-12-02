@@ -4,22 +4,22 @@
 #include <vector>
 
 template<class T, size_t BLOCK_SIZE>
-class Allocator {
+class allocator {
 private:
     T* Buffer;
     std::vector<T*> Vector;
 public:
-    using allocator_type = Allocator;
+    using allocator_type = allocator;
     using value_type = T;
     using pointer = T*;
     using const_pointer = const T*;
     using size_type = std::size_t;
 
-    Allocator(): Vector(), Buffer(nullptr) {
+    allocator(): Vector(), Buffer(nullptr) {
         static_assert(BLOCK_SIZE > 0);
     }
 
-    explicit Allocator (const Allocator<T, BLOCK_SIZE> &another_allocator): Allocator() {
+    explicit allocator (const allocator<T, BLOCK_SIZE> &another_allocator): allocator() {
         Buffer = new T[BLOCK_SIZE];
         for (std::size_t i = 0; i < BLOCK_SIZE; ++i) {
             Buffer[i] = another_allocator.Buffer[i];
@@ -30,15 +30,16 @@ public:
     T *allocate(const std::size_t &size) {
         if (Buffer == nullptr) {
             Buffer = new T[BLOCK_SIZE];
-            for (std::size_t i = 0; i < BLOCK_SIZE; i++) {
+            for (int i = BLOCK_SIZE - 1; i >= 0; i--) {
                 Vector.push_back(&Buffer[i]);
             }
         }
+        printf("Allocating %lu bytes in block with %lu free bytes\n", size, Vector.size());
         if (Vector.size() < size) {
             throw(std::bad_alloc());
         }
         else {
-            T* pointer = Vector.front();
+            T* pointer = Vector.back();
             for (std::size_t i = 0; i < size; ++i) {
                 Vector.pop_back();
             }
@@ -48,10 +49,11 @@ public:
 
     template<class U>
     struct rebind {
-        using other = Allocator<U, BLOCK_SIZE>;
+        using other = allocator<U, BLOCK_SIZE>;
     };
 
     void deallocate(T* pointer, std::size_t) {
+        Vector.push_back(pointer);
         ;
     }
 
@@ -60,7 +62,7 @@ public:
         *p = OTHER_T(std::forward<ARGS>(arguments)...);
     }
 
-    ~Allocator() {
+    ~allocator() {
         delete [] Buffer;
     }
 };

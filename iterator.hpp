@@ -4,7 +4,7 @@
 template <class T>
 class TIterator {
 private:
-    std::shared_ptr<N> Iterator;
+    std::shared_ptr<T> Iterator;
 public:
     using iterator_categoty = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
