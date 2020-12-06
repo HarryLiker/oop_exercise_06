@@ -34,9 +34,8 @@ public:
                 Vector.push_back(&Buffer[i]);
             }
         }
-        printf("Allocating %lu bytes in block with %lu free bytes\n", size, Vector.size());
         if (Vector.size() < size) {
-            throw(std::bad_alloc());
+            throw("There is no free blocks to allocate memory! Please, remove an item from the collection to add a new item.");
         }
         else {
             T* pointer = Vector.back();
@@ -53,7 +52,6 @@ public:
     };
 
     void deallocate(T* pointer, std::size_t) {
-        Vector.push_back(pointer);
         ;
     }
 

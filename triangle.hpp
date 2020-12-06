@@ -13,10 +13,6 @@ struct Triangle {
     Triangle(): Center(), Side() {}
     Triangle(const vertex_t &center, const T &side): Center(center), Side(side) {}
 
-    double Square() const {
-        return Side * Side * sqrt(3) / 4.0;
-    }
-
     // Assignment operator
     Triangle& operator=(const Triangle& other) {
         Center = other.Center;

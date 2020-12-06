@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <memory>
-//#include "iterator.hpp"
 #include <exception>
 #include "allocator.hpp"
 
@@ -13,13 +12,13 @@ private:
 
     using allocator_type = typename ALLOCATOR::template rebind<Node>::other;
 
-    struct deleter {
-        allocator_type stack_node_deleter;
-        deleter(): stack_node_deleter() {};
-        deleter(allocator_type *another_deleter): stack_node_deleter(another_deleter) {}
+    struct Deleter {
+        allocator_type node_deleter;
+        Deleter(): node_deleter() {};
+        Deleter(allocator_type *another_deleter): node_deleter(another_deleter) {}
 
         void operator() (void *pointer) {
-            stack_node_deleter.deallocate((Node*)pointer, 1);
+            node_deleter.deallocate((Node*)pointer, 1);
         }
     };
 
@@ -61,7 +60,7 @@ public:
 
         explicit StackIterator(const std::shared_ptr<Node> &another_iter): Iterator(another_iter) {}
 
-        void unvalidate() {
+        void Annul() {
             Iterator = nullptr;
         }
 
@@ -77,13 +76,13 @@ public:
             return &other_iterator.Iterator->Data == &this->Iterator->Data;
         }
 
-        StackIterator & operator++ () {
+        StackIterator &operator++() {
             if (this->Iterator != nullptr) {
                 this->Iterator = this->Iterator->Next;
                 return *this;
             }
             else {
-                throw(std::runtime_error("Iterator points to nullptr!"));
+                throw("Iterator points to nullptr!");
             }
         }
 
@@ -95,7 +94,7 @@ public:
 private:
     std::shared_ptr<Node> TopNode;
     int Size = 0;
-    deleter stack_deleter;
+    Deleter Stack_deleter;
     
 public:  
     Stack() noexcept: TopNode() {}
@@ -105,9 +104,9 @@ public:
     }
 
     void Push(const T &element) {
-        Node *new_node = stack_deleter.stack_node_deleter.allocate(sizeof(Node));
-        stack_deleter.stack_node_deleter.construct(new_node, element);
-        std::shared_ptr<Node> new_node_shared(new_node, stack_deleter);
+        Node *new_node = Stack_deleter.node_deleter.allocate(sizeof(Node));
+        Stack_deleter.node_deleter.construct(new_node, element);
+        std::shared_ptr<Node> new_node_shared(new_node, Stack_deleter);
         new_node_shared->Next = TopNode;
         TopNode = new_node_shared;
         Size++;
@@ -119,7 +118,7 @@ public:
             Size--;
         }
         else {
-            throw ("Stack is empty!\n");
+            throw ("Stack is empty!");
         }
     }
 
@@ -128,19 +127,19 @@ public:
             return TopNode->Data;
         }
         else {
-            throw ("Stack is empty!\n");
+            throw ("Stack is empty!");
         }
     }
 
     void Insert(StackIterator iter, const T &element) {
-        Node* new_node = stack_deleter.stack_node_deleter.allocate(sizeof(Node));
-        stack_deleter.stack_node_deleter.construct(new_node, element);
-        std::shared_ptr<Node> new_node_shared(new_node, stack_deleter);
+        Node* new_node = Stack_deleter.node_deleter.allocate(sizeof(Node));
+        Stack_deleter.node_deleter.construct(new_node, element);
+        std::shared_ptr<Node> new_node_shared(new_node, Stack_deleter);
         if (TopNode) {
             if (*iter == *TopNode) {
                 new_node_shared->Next = TopNode;
                 TopNode = new_node_shared;
-                iter.unvalidate();
+                iter.Annul();
                 return;
             }
             std::shared_ptr<Node> previous_node = TopNode;
@@ -159,7 +158,7 @@ public:
             TopNode = new_node_shared;
         }
         Size++;
-        iter.unvalidate();
+        iter.Annul();
     }
 
     void Erase(StackIterator iter) {
@@ -178,7 +177,7 @@ public:
                 previous_node->Next = previous_node->Next->Next;
                 (*iter).Next = nullptr;
             }
-            iter.unvalidate();
+            iter.Annul();
         }
         Size--;
     }

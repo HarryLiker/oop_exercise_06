@@ -1,8 +1,8 @@
 #include <iostream>
 #include <algorithm>
+#include <exception>
 #include "stack.hpp"
 #include "triangle.hpp"
-#include <exception>
 
 int menu() {
     const std::size_t BLOCK_SIZE = 256;
@@ -27,13 +27,17 @@ int menu() {
             std::cin >> x >> y;
             std::cout << "Write size of the triangle: ";
             std::cin >> side;
-            stack.Push(Triangle<int>(std::pair<int,int> {x, y}, side));
-            std::cout << "The figure has been added\n";
+            try {
+                stack.Push(Triangle<int>(std::pair<int,int> {x, y}, side));
+                std::cout << "The figure has been added\n";
+            }
+            catch (const char* error) {
+                std::cout << "Error: " << error << "\n";
+            }
             break;
         }
         case 2:
         {
-            
             int x,y;
             int side;
             int index;
@@ -45,7 +49,7 @@ int menu() {
             std::cin >> index;
             try {
                 if (stack.FindSize() + 1 < index) {
-                    throw std::invalid_argument("Entered the wrong index!\n");
+                    throw ("Entered the wrong index!");
                 }
                 else {
                     auto iterator = stack.begin();
@@ -56,15 +60,20 @@ int menu() {
                     std::cout << "The figure has been added\n";
                 }
             }
-            catch (std::invalid_argument &argument){
-                std::terminate();
+            catch (const char* error){
+                std::cout << "Error: " << error << "\n";
             }
             break;
         }
         case 3:
         {
-            stack.Pop();
-            std::cout << "The figure has been removed\n";
+            try {
+                stack.Pop();
+                std::cout << "The figure has been removed\n";
+            }
+            catch (const char* error) {
+                std::cout << "Error: " << error << "\n";
+            }
             break;
         }
         case 4:
@@ -73,27 +82,28 @@ int menu() {
             std::cout << "Enter the position of the element to remove: ";
             std::cin >> index;
             try {
+                if (stack.FindSize() < index) {
+                    throw ("Entered the wrong index!\n");
+                }
                 auto iterator = stack.begin();
                 while (--index) {
                     ++iterator;
                 }
                 stack.Erase(iterator);
-                std::cout << "The figure has been removed\n";
+                std::cout << "The figure has been removed.\n";
             }
-            catch(std::runtime_error &error) {
-                std::cout << error.what() << "\n";
+            catch(const char* error) {
+                std::cout << "Error: " << error;
             }
             break;
         }
         case 5:
         {
-            
             auto print_stack = [](const auto & figure) {
                 std::cout << figure << "\n";
             };
             std::cout << "All figures:\n";
             std::for_each(stack.begin(), stack.end(), print_stack);
-            
             break;
         }
         case 6:
@@ -108,4 +118,5 @@ int menu() {
         }
         std::cout << "\n";
     }
+    return 0;
 }
